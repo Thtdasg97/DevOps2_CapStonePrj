@@ -39,7 +39,7 @@ jobs:
       - name: Build & push Backend image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
+          context: ./mern-todo-app/backend
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:${{ steps.set_tag.outputs.tag }}
@@ -50,7 +50,7 @@ jobs:
       - name: Build & push Frontend image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: ./mern-todo-app/frontend
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:${{ steps.set_tag.outputs.tag }}
