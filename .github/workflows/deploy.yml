@@ -75,7 +75,12 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd ~/DevOps2_CapStonePrj/mern-todo-app
+            cd ~/DevOps2_CapStonePrj
+
+            # Lấy code mới nhất (bao gồm docker-compose.prod.yml)
+            git pull origin main
+
+            cd mern-todo-app
 
             # Cập nhật IMAGE_TAG trong .env.prod
             sed -i "s/IMAGE_TAG=.*/IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}/" .env.prod
