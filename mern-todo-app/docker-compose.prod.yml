@@ -20,7 +20,7 @@ services:
       start_period: 20s
 
   backend:
-    image: ${DOCKERHUB_USERNAME}/todo-backend:${IMAGE_TAG:-latest}   # ← pull từ Docker Hub
+    image: ${DOCKERHUB_USERNAME}/todo-backend:${IMAGE_TAG:-latest}   # ← pull từ Docker - Hub
     container_name: backend
     restart: unless-stopped
     ports:
