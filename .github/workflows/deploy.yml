@@ -82,16 +82,16 @@ jobs:
 
             # Pull images mới từ Docker Hub
             export $(cat .env.prod | xargs)
-            docker compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml pull
 
             # Restart với images mới
-            docker compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.prod.yml up -d
 
             # Dọn dẹp images cũ
             docker image prune -f
 
             # Kiểm tra kết quả
-            docker compose -f docker-compose.prod.yml ps
+            docker-compose -f docker-compose.prod.yml ps
 
 
             
