@@ -93,8 +93,9 @@
             echo "❌ Pipeline thất bại. Kiểm tra logs ở trên."
         }
         always {
-            // Dọn dẹp images local trên Jenkins để tránh đầy disk
-            sh "docker image prune -f || true"
+            node {
+                sh "docker image prune -f || true"
+            }
         }
     }
 }
