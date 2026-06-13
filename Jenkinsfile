@@ -25,8 +25,8 @@ pipeline {
         // ─────────────────────────────────────
             steps {
                 script {
-                    docker.build("${BACKEND_IMAGE}", "./backend")
-                    docker.build("${FRONTEND_IMAGE}", "./frontend")
+                    docker.build("${BACKEND_IMAGE}", "./mern-todo-app/backend")
+                    docker.build("${FRONTEND_IMAGE}", "./mern-todo-app/frontend")
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
                 ]) {
                     sh """
                         scp -i \$SSH_KEY -o StrictHostKeyChecking=no \\
-                            docker-compose.prod.yml \\
+                            mern-todo-app/docker-compose.prod.yml \\
                             root@\$VPS_HOST:~/DevOps2_CapStonePrj/mern-todo-app/
 
                         ssh -i \$SSH_KEY -o StrictHostKeyChecking=no root@\$VPS_HOST '
