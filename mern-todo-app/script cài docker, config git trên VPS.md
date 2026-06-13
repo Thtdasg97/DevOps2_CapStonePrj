@@ -42,3 +42,8 @@ docker-compose up -d                 # Build + chạy tất cả service
 # ===== BƯỚC 4: Kiểm tra kết quả =====
 # Truy cập: http://<IP_server>:<port>
 # Ví dụ: http://167.99.12.34:3001
+
+
+
+# lệnh lấy initial pwd của Jenkins khi mới cài
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
