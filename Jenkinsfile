@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+    // Test Delop
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         VPS_HOST              = credentials('vps-host')
