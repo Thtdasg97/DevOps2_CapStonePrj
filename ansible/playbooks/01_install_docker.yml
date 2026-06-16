@@ -1,0 +1,85 @@
+- name: Install Docker Engine and Docker Compose on VPS
+  hosts: webservers
+  become: true   # sudo — cần để cài packages và manage services
+
+  tasks:
+
+    # ── 1. System update ────────────────────────────────────────────
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600   # chỉ update nếu cache cũ hơn 1 giờ
+
+    # ── 2. Install prerequisites ────────────────────────────────────
+    - name: Install Docker prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    # ── 3. Add Docker GPG key and repository (using deb822 format) ────
+    - name: Add Docker repository with GPG key
+      deb822_repository:
+        name: docker
+        types: [deb]
+        uris: https://download.docker.com/linux/ubuntu
+        signed_by: https://download.docker.com/linux/ubuntu/gpg
+        suites: ["{{ ansible_distribution_release }}"]
+        components: [stable]
+        state: present
+
+    # ── 5. Install Docker Engine ─────────────────────────────────────
+    - name: Install Docker Engine and Compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    # ── 6. Start and enable Docker ───────────────────────────────────
+    - name: Ensure Docker service is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: yes   # tự động start khi VPS reboot
+
+    # ── 7. Add root to docker group ──────────────────────────────────
+    - name: Add root user to docker group
+      user:
+        name: root
+        groups: docker
+        append: yes
+
+    # ── 8. Install Docker SDK for Python (dùng cho Ansible docker modules) ──
+    - name: Install Docker Python SDK
+      pip:
+        name: docker
+        state: present
+
+    # ── 9. Verify ────────────────────────────────────────────────────
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false   # không mark as changed dù command chạy
+
+    - name: Print Docker version
+      debug:
+        msg: "{{ docker_version.stdout }}"
+
+    - name: Verify Docker Compose installation
+      command: docker compose version
+      register: compose_version
+      changed_when: false
+
+    - name: Print Docker Compose version
+      debug:
+        msg: "{{ compose_version.stdout }}"

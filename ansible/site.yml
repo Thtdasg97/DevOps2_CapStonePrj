@@ -1,0 +1,9 @@
+# Master playbook — chạy toàn bộ setup theo đúng thứ tự
+# Usage: ansible-playbook site.yml
+# Hoặc chạy riêng lẻ từng playbook khi cần
+
+- name: Phase 1 — Install Docker on VPS
+  import_playbook: playbooks/01_install_docker.yml
+
+- name: Phase 2 — Deploy MERN Todo App
+  import_playbook: playbooks/02_deploy_app.yml
