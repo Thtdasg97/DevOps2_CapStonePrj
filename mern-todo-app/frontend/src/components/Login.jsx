@@ -65,7 +65,7 @@ function Login() {
                                 <div className="flex justify-between items-center mb-6">
                                     <Link
                                         to={"/forgotPassword"}
-                                    >Forgot Password?</Link>
+                                    >Hello Mentor XXX</Link>
                                 </div>
                                 <div className="text-center lg:text-left">
                                     <button
