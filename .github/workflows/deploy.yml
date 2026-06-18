@@ -77,6 +77,9 @@ jobs:
           script: |
             cd ~/DevOps2_CapStonePrj
 
+            # Xóa untracked files bị conflict (được tạo bởi Ansible/manual)
+            git checkout -- .
+
             # Lấy code mới nhất (bao gồm docker-compose.prod.yml)
             git pull origin main
 
