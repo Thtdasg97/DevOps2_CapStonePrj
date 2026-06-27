@@ -33,3 +33,9 @@ variable "ssh_key_name" {
   type        = string
   default     = "github-actions-deploy"
 }
+
+variable "admin_ip" {
+  description = "IP public của admin (CIDR /32) — whitelist SSH và admin ports. Set trong terraform.tfvars, không commit."
+  type        = string
+  # Không có default — bắt buộc phải set trong terraform.tfvars
+}

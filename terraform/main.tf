@@ -36,47 +36,52 @@ resource "digitalocean_firewall" "capstone_firewall" {
 
   droplet_ids = [digitalocean_droplet.capstone_vps.id]
 
-  # ── Inbound rules ─────────────────────────────────────────────
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "22"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # SSH
-  }
+  # ── Inbound rules — hardened ──────────────────────────────────────
+
+  # HTTP/HTTPS: public — user access qua Nginx
   inbound_rule {
     protocol         = "tcp"
     port_range       = "80"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # HTTP
+    source_addresses = ["0.0.0.0/0", "::/0"]
   }
   inbound_rule {
     protocol         = "tcp"
     port_range       = "443"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # HTTPS
+    source_addresses = ["0.0.0.0/0", "::/0"]
   }
+
+  # SSH: chỉ admin IP
   inbound_rule {
     protocol         = "tcp"
-    port_range       = "3000"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # Frontend
+    port_range       = "22"
+    source_addresses = [var.admin_ip]
   }
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "8000"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # Backend API
-  }
+
+  # Jenkins: chỉ admin IP
   inbound_rule {
     protocol         = "tcp"
     port_range       = "8080"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # Jenkins
+    source_addresses = [var.admin_ip]
   }
+
+  # Prometheus: chỉ admin IP
   inbound_rule {
     protocol         = "tcp"
     port_range       = "9090"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # Prometheus
+    source_addresses = [var.admin_ip]
   }
+
+  # Grafana: chỉ admin IP
   inbound_rule {
     protocol         = "tcp"
     port_range       = "3001"
-    source_addresses = ["0.0.0.0/0", "::/0"]   # Grafana
+    source_addresses = [var.admin_ip]
   }
+
+  # Port 3000 (Frontend) và 8000 (Backend API): KHÔNG public
+  # App được serve qua Nginx trên port 80/443
+  # Nếu cần debug trực tiếp: dùng SSH tunnel
+  #   ssh -L 3000:localhost:3000 root@178.128.30.8
 
   # ── Outbound rules — cho phép tất cả ─────────────────────────
   outbound_rule {
