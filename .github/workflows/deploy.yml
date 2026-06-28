@@ -27,6 +27,21 @@ jobs:
         id: set_tag
         run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        working-directory: ./mern-todo-app/backend
+        run: npm ci
+
+      - name: Run syntax check & tests
+        working-directory: ./mern-todo-app/backend
+        run: |
+          npm run check
+          npm test
+        
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -99,6 +114,46 @@ jobs:
 
             # Kiểm tra kết quả
             docker-compose -f docker-compose.prod.yml ps
+
+      - name: Healthcheck after deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "⏳ Đợi backend khởi động..."
+            for i in $(seq 1 5); do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo "000")
+              echo "Lần $i: HTTP $STATUS"
+              if [ "$STATUS" = "200" ]; then
+                echo "✅ Healthcheck passed!"
+                exit 0
+              fi
+              sleep 10
+            done
+            echo "❌ Healthcheck failed sau 5 lần thử"
+            exit 1
+
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/DevOps2_CapStonePrj/mern-todo-app
+            if [ -f .env.prod.backup ]; then
+              echo "⏪ Rolling back to previous image..."
+              cp .env.prod.backup .env.prod
+              export $(cat .env.prod | xargs)
+              docker-compose -f docker-compose.prod.yml pull
+              docker-compose -f docker-compose.prod.yml up -d
+              echo "✅ Rollback completed"
+            else
+              echo "⚠️ Không tìm thấy backup để rollback"
+            fi
 
 
             
