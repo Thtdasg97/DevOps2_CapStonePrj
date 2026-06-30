@@ -26,6 +26,12 @@
         // ─────────────────────────────────────
         stage('Verify') {
         // ─────────────────────────────────────
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
             steps {
                 dir("${APP_DIR}/backend") {
                     sh 'npm ci'
@@ -40,8 +46,8 @@
         // ─────────────────────────────────────
             steps {
                 script {
-                    docker.build("${BACKEND_IMAGE}", "./backend")
-                    docker.build("${FRONTEND_IMAGE}", "./frontend")
+                    docker.build("${BACKEND_IMAGE}", "./${APP_DIR}/backend")
+                    docker.build("${FRONTEND_IMAGE}", "./${APP_DIR}/frontend")
                 }
             }
         }
