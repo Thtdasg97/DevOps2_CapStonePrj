@@ -45,3 +45,8 @@ terraform/.terraform.lock.hcl
 
 # Ansible secrets
 ansible/.env.prod
+
+#Personal
+CLAUDE.md
+Feedback
+FeedbackAnalyst.md

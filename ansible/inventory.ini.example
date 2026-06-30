@@ -1,0 +1,11 @@
+# inventory.ini.example — Template, safe to commit
+# Sao chép file này thành inventory.ini và điền IP thật:
+#   cp ansible/inventory.ini.example ansible/inventory.ini
+#   # Sau đó edit IP trong inventory.ini
+
+[webservers]
+capstone-vps ansible_host=YOUR_VPS_IP
+
+[webservers:vars]
+ansible_user=root
+ansible_python_interpreter=/usr/bin/python3

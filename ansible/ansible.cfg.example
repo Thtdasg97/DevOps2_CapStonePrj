@@ -1,0 +1,15 @@
+# ansible.cfg.example — Template, safe to commit
+# Sao chép file này thành ansible.cfg và cập nhật private_key_file:
+#   cp ansible/ansible.cfg.example ansible/ansible.cfg
+#   # Sau đó sửa private_key_file thành path SSH key thật của bạn
+
+[defaults]
+inventory          = inventory.ini
+private_key_file   = ~/.ssh/capstone-ssh-key
+remote_user        = root
+host_key_checking  = False
+stdout_callback    = ansible.builtin.default
+result_format      = yaml
+
+[ssh_connection]
+pipelining = True

@@ -1,0 +1,71 @@
+- name: Deploy MERN Todo App on VPS
+  hosts: webservers
+
+  vars:
+    app_dir: /opt/mern-todo-app
+    compose_file: "{{ app_dir }}/docker-compose.prod.yml"
+
+  tasks:
+
+    # ── 1. Tạo thư mục app trên VPS ──────────────────────────────────
+    - name: Create app directory on VPS
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    # ── 2. Copy docker-compose.prod.yml lên VPS ──────────────────────
+    - name: Copy docker-compose.prod.yml to VPS
+      copy:
+        src: "{{ playbook_dir }}/../../mern-todo-app/docker-compose.prod.yml"
+        dest: "{{ compose_file }}"
+        mode: '0644'
+
+    # ── 3. Copy .env file lên VPS ────────────────────────────────────
+    # QUAN TRỌNG: tạo file .env.prod trước khi chạy playbook này
+    # File này chứa secrets — KHÔNG commit lên Git
+    - name: Copy .env file to VPS
+      copy:
+        src: "{{ playbook_dir }}/../.env.prod"
+        dest: "{{ app_dir }}/.env"
+        mode: '0600'   # chỉ owner đọc được — bảo vệ secrets
+
+    # ── 4. Pull latest images từ Docker Hub ──────────────────────────
+    - name: Pull latest Docker images
+      shell: docker compose -f {{ compose_file }} pull
+      args:
+        chdir: "{{ app_dir }}"
+      register: pull_output
+      changed_when: "'Pull complete' in pull_output.stdout or 'Downloaded' in pull_output.stdout"
+
+    # ── 5. Start/Restart containers ──────────────────────────────────
+    - name: Start containers with docker compose
+      shell: docker compose -f {{ compose_file }} up -d --remove-orphans
+      args:
+        chdir: "{{ app_dir }}"
+      register: compose_output
+
+    - name: Print compose output
+      debug:
+        msg: "{{ compose_output.stdout_lines }}"
+
+    # ── 6. Wait for containers to be healthy ─────────────────────────
+    - name: Wait for app to be ready (30 seconds)
+      wait_for:
+        port: 3000
+        host: "{{ ansible_host }}"
+        delay: 5
+        timeout: 60
+      delegate_to: localhost
+
+    # ── 7. Verify containers running ─────────────────────────────────
+    - name: Verify running containers
+      command: docker compose -f {{ compose_file }} ps
+      args:
+        chdir: "{{ app_dir }}"
+      register: ps_output
+      changed_when: false
+
+    - name: Print container status
+      debug:
+        msg: "{{ ps_output.stdout_lines }}"

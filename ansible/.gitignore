@@ -1,0 +1,14 @@
+# Ansible — files chứa thông tin nhạy cảm, không commit
+# Dùng *.example làm template thay thế
+
+# File chứa IP VPS thật
+inventory.ini
+
+# File chứa path SSH key local của admin
+ansible.cfg
+
+# Secrets
+.env.prod
+*.pem
+*.key
+vault_password

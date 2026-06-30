@@ -33,5 +33,14 @@ app.use("/api/user", userRouter)
 app.use("/api/task", taskRouter)
 app.use("/api/forgotPassword", forgotPasswordRouter)
 
+// health check
+app.get("/health", (req, res) => {
+  const dbReady = mongoose.connection.readyState === 1;
+  res.status(dbReady ? 200 : 503).json({
+    status: dbReady ? "ok" : "db_disconnected",
+    database: dbReady ? "connected" : "disconnected"
+  });
+});
+
 //listen
 app.listen(port, () => console.log(`Listening on localhost:${port}`))
