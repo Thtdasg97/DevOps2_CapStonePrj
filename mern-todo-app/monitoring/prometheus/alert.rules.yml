@@ -1,0 +1,93 @@
+groups:
+  - name: app_alerts
+    rules:
+
+      # ─────────────────────────────────────────
+      # Backend down (Blackbox probe fail)
+      # ─────────────────────────────────────────
+      - alert: BackendDown
+        expr: probe_success{job="blackbox-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend is down"
+          description: "Backend /health endpoint has not responded with 200 for more than 1 minute. Instance: {{ $labels.instance }}"
+
+      # ─────────────────────────────────────────
+      # Frontend down (Blackbox probe fail)
+      # ─────────────────────────────────────────
+      - alert: FrontendDown
+        expr: probe_success{job="blackbox-frontend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Frontend is down"
+          description: "Frontend is not responding for more than 1 minute. Instance: {{ $labels.instance }}"
+
+      # ─────────────────────────────────────────
+      # MongoDB down (mongodb-exporter không reach được)
+      # ─────────────────────────────────────────
+      - alert: MongoDBDown
+        expr: mongodb_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB is down"
+          description: "MongoDB exporter cannot connect to MongoDB. Instance: {{ $labels.instance }}"
+
+      # ─────────────────────────────────────────
+      # Disk space cao (> 80%)
+      # ─────────────────────────────────────────
+      - alert: DiskSpaceHigh
+        expr: |
+          (node_filesystem_size_bytes{fstype!="tmpfs",mountpoint="/"} 
+           - node_filesystem_free_bytes{fstype!="tmpfs",mountpoint="/"})
+          / node_filesystem_size_bytes{fstype!="tmpfs",mountpoint="/"} * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk usage is above 80%"
+          description: "Disk usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%. Consider cleaning up logs or old Docker images."
+
+      # ─────────────────────────────────────────
+      # Memory cao (> 85%)
+      # ─────────────────────────────────────────
+      - alert: MemoryHigh
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory usage is above 85%"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | printf \"%.1f\" }}%."
+
+      # ─────────────────────────────────────────
+      # Container restart nhiều lần (> 3 lần trong 10 phút)
+      # ─────────────────────────────────────────
+      - alert: ContainerRestartingTooMuch
+        expr: |
+          changes(container_start_time_seconds{name=~"backend|frontend|mongo"}[10m]) > 3
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} is restarting too often"
+          description: "Container {{ $labels.name }} has restarted more than 3 times in the last 10 minutes. Check logs: docker logs {{ $labels.name }}"
+
+      # ─────────────────────────────────────────
+      # Prometheus target down (scrape fail)
+      # ─────────────────────────────────────────
+      - alert: PrometheusTargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus target is down"
+          description: "Prometheus cannot scrape target {{ $labels.job }} / {{ $labels.instance }} for more than 2 minutes."
